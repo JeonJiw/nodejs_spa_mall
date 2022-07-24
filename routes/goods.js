@@ -18,10 +18,8 @@ router.get('/goods/cart', async (req, res) => {
       };
   });
 
-  
-
   res.json({
-      carts : results,
+      cart : results,
   })
 });
 
@@ -68,38 +66,24 @@ const goods = [
 
 router.get('/goods', (req,res) => { ///api/goods
     res.json({
-        goods, //goods = goods key와 value가 같으면 하나만 써도 됨
+        goods, 
     });
 });
 
-// /goods/1234가 goodsID가 되는 것(아래코드)
+
 router.get('/goods/:goodsId', async (req, res) => {
     const { goodsId } = req.params;
 
-    const [detail] = await Goods.find({ goodsId : Number(goodsId) });
+    const [goods] = await Goods.find({ goodsId : Number(goodsId) });
 
 
     res.json({
-        detail,
+        goods,
     });
 });
 
-/* goodsId를 가져와서 주소에 들어가게 되면, 그것은 문자열이다. ===는 타입 체크까지 하기 때문에 
-주소에 들어가는 '숫자'와 변수 goods 안에 각 item마다 가지고 있는 goodsId인 숫자는 다르다. */
-
-/* 
-router.get('/goods/:goodsId', (req,res) => {
-    const goodsId = req.params.goodsId;
-
-    res.json({
-        detail : goods.filter((item) => { //goods is Array //filter return type pf array
-            return item.goodsId === goodsId;
-        }),
-    });
-}); */
-
 router.post('/goods/:goodsId/cart', async(req, res) => {
-  const { goodsId } = req.params; //다 string
+  const { goodsId } = req.params; 
   const { quantity } = req.body;
 
   const existsCarts = await Cart.find({ goodsId: Number(goodsId) });
@@ -112,7 +96,6 @@ router.post('/goods/:goodsId/cart', async(req, res) => {
 });
 
 
-// 위에는 장바구니 추가, 아래는 장바구니 제거
 router.delete('/goods/:goodsId/cart', async(req, res) => {
   const { goodsId } = req.params; //다 string
 
@@ -137,17 +120,15 @@ router.put('/goods/:goodsId/cart', async(req, res) => {
 
   const existsCarts = await Cart.find({ goodsId: Number(goodsId) });
   if (!existsCarts.length) { //1이 아닐때, 즉 길이가 0이라는 것은 아무것도 없을때니까 !를 붙여서 부정으로 바꿔준다.
-    return res.status(400).json({ success: false, errorMessage: '장바구니에 해당 상품이 없습니다.' });
+    await Cart.create({ goodsId: Number(goodsId), quantity });
+  } else{
+    await Cart.updateOne({ goodsID: Number(goodsId) }, { $set: { quantity} });
   }
-
-  await Cart.updateOne({ goodsID: Number(goodsId) }, { $set: { quantity} });
-
-
   res.json({ success: true });
 
 });
 
-
+//상품 생성
 router.post('/goods', async (req, res) => {
   /*   const goodsId = req.body.goodsId;
     const name = req.body.name;

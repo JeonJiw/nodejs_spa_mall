@@ -12,7 +12,9 @@ const requestMiddleware = (req, res, next) => {
     next();
 }; 
 
+app.use(express.static('static'));
 app.use(express.json()); //json형태의 데이터를 파싱해주는 미들웨어
+app.use(express.urlencoded());
 app.use(requestMiddleware);//use는 미들웨어이기 때문에 get, listen 위에 써야 영향을 줌
 
 
